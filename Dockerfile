@@ -11,4 +11,7 @@ RUN dnf install -y ca-certificates && dnf clean all
 WORKDIR /app
 COPY --from=build /app/catalogue .
 EXPOSE 8002
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["./catalogue"]
