@@ -57,11 +57,22 @@ func connectDB() {
 	log.Fatal("Failed to connect to MySQL:", err)
 }
 
+func jsonLogger() gin.HandlerFunc {
+	return gin.LoggerWithFormatter(func(p gin.LogFormatterParams) string {
+		return fmt.Sprintf(`{"time":"%s","method":"%s","path":"%s","status":%d,"latency_ms":%.3f,"client_ip":"%s"}%s`,
+			p.TimeStamp.UTC().Format(time.RFC3339),
+			p.Method, p.Path, p.StatusCode,
+			float64(p.Latency.Microseconds())/1000.0,
+			p.ClientIP, "\n")
+	})
+}
+
 func main() {
 	connectDB()
 	defer db.Close()
 
-	r := gin.Default()
+	r := gin.New()
+	r.Use(jsonLogger(), gin.Recovery())
 	r.Use(cors.Default())
 
 	r.GET("/health", func(c *gin.Context) {
